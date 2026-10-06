@@ -18,7 +18,7 @@ Die App ist mit [Capacitor](https://capacitorjs.com) aus dem Ordner `app/` gebau
 
 ## iPhone
 
-Auf dem iPhone läuft die Web-App: Nach dem Übernehmen in `main` wird sie unter https://brayanariasmendoza-cmd.github.io/Vertriebbs/ veröffentlicht. In Safari öffnen, auf „Teilen“ und „Zum Home-Bildschirm“ tippen. Danach startet sie wie eine App und funktioniert offline. Eine echte iPhone-App aus dem App Store braucht ein Apple-Entwicklerkonto.
+Auf dem iPhone läuft die Web-App: Nach dem Übernehmen in `main` wird sie auf GitHub Pages veröffentlicht (Adresse steht in den Repository-Einstellungen unter „Pages“). In Safari öffnen, auf „Teilen“ und „Zum Home-Bildschirm“ tippen. Danach startet sie wie eine App und funktioniert offline. Eine echte iPhone-App aus dem App Store braucht ein Apple-Entwicklerkonto.
 
 ## Starten im Browser
 
