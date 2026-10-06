@@ -1,6 +1,6 @@
 // Speichert die App-Dateien, damit sie ohne Netz startet.
-const CACHE = 'vertrieb-v2';
-const FILES = ['./', 'index.html', 'style.css', 'app.js', 'lib.js', 'manifest.json'];
+const CACHE = 'vertrieb-v3';
+const FILES = ['./', 'index.html', 'style.css', 'app.js', 'lib.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App-Symbol: weißes Haus mit Tür auf blauem Grund -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M54,30 L78,50 L74,50 L74,76 L34,76 L34,50 L30,50 Z" />
+    <path android:fillColor="#0B5CAD"
+        android:pathData="M48,58 L60,58 L60,76 L48,76 Z" />
+</vector>
