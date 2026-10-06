@@ -62,3 +62,12 @@ export function toCSV(visits) {
   for (const v of visits) lines.push(CSV_COLUMNS.map(([, get]) => csvCell(get(v))).join(';'));
   return lines.join('\n');
 }
+
+// Letztes Ergebnis je Hausnummer einer Straße, nach Hausnummer sortiert.
+export function doorsOnStreet(visits, street) {
+  const latest = new Map();
+  for (const v of visits) if (v.street === street) latest.set(v.number, v.outcome);
+  return [...latest]
+    .map(([number, outcome]) => ({ number, outcome }))
+    .sort((a, b) => a.number.localeCompare(b.number, 'de', { numeric: true }));
+}

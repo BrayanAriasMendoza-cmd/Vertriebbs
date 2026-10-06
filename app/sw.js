@@ -1,5 +1,5 @@
 // Speichert die App-Dateien, damit sie ohne Netz startet.
-const CACHE = 'vertrieb-v1';
+const CACHE = 'vertrieb-v2';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'lib.js', 'manifest.json'];
 
 self.addEventListener('install', (e) => {

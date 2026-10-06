@@ -1,4 +1,4 @@
-import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey } from './lib.js';
+import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet } from './lib.js';
 
 const $ = (sel) => document.querySelector(sel);
 const STORE = 'visits';
@@ -11,6 +11,14 @@ function saveVisit(visit) {
   const visits = loadVisits();
   visits.push(visit);
   localStorage.setItem(STORE, JSON.stringify(visits));
+}
+
+function loadStreets() {
+  return JSON.parse(localStorage.getItem('streets') || '[]');
+}
+
+function saveStreets(streets) {
+  localStorage.setItem('streets', JSON.stringify(streets));
 }
 
 function show(name) {
@@ -32,6 +40,24 @@ function renderHome() {
     [s.nicht_da, 'Nicht da'],
   ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
 
+  const streets = $('#streets');
+  streets.replaceChildren();
+  for (const name of loadStreets()) {
+    const li = document.createElement('li');
+    li.className = 'street';
+    li.innerHTML = '<span></span><span><small></small><button title="Entfernen">✕</button></span>';
+    li.querySelector('span').textContent = name;
+    li.querySelector('small').textContent = `${doorsOnStreet(visits, name).length} Türen`;
+    li.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        if (confirm(`${name} aus dem Gebiet entfernen?`)) saveStreets(loadStreets().filter((s) => s !== name));
+        return renderHome();
+      }
+      openDoor(name);
+    });
+    streets.append(li);
+  }
+
   const list = $('#list');
   list.replaceChildren();
   for (const v of visits.filter((v) => dayKey(v.time) === today).reverse()) {
@@ -44,13 +70,26 @@ function renderHome() {
   }
 }
 
-$('#btn-new').addEventListener('click', () => {
-  // Straße, PLZ und Ort bleiben vom letzten Besuch stehen, nur die Hausnummer wird neu eingegeben.
+// Straße, PLZ und Ort bleiben vom letzten Besuch stehen, nur die Hausnummer wird neu eingegeben.
+function openDoor(street) {
   const f = $('#form-address');
+  if (street) f.street.value = street;
   f.number.value = '';
   f.note.value = '';
+  renderDone();
   show('door');
   (f.street.value ? f.number : f.street).focus();
+}
+
+$('#btn-new').addEventListener('click', () => openDoor());
+
+$('#form-street').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = e.target.street.value.trim();
+  const streets = loadStreets();
+  if (!streets.includes(name)) saveStreets([...streets, name]);
+  e.target.reset();
+  renderHome();
 });
 
 $('#btn-export').addEventListener('click', () => {
@@ -71,6 +110,16 @@ $('#btn-plus').addEventListener('click', () => {
   const n = parseInt(input.value, 10);
   input.value = Number.isNaN(n) ? '' : String(n + 2);
 });
+
+// Zeigt, welche Hausnummern der Straße schon besucht wurden.
+function renderDone() {
+  const doors = doorsOnStreet(loadVisits(), $('#form-address').street.value.trim());
+  $('#done').textContent = doors.length
+    ? `Schon besucht: ${doors.map((d) => `${d.number} (${OUTCOMES[d.outcome]})`).join(', ')}`
+    : '';
+}
+
+$('#form-address').street.addEventListener('change', renderDone);
 
 function currentAddress() {
   const f = $('#form-address');
@@ -187,5 +236,5 @@ $('#btn-clear-sig').addEventListener('click', clearSignature);
 
 // ---------- Start ----------
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 show('home');

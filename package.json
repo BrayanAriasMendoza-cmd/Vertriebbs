@@ -4,6 +4,12 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "start": "npx --yes serve app"
+    "start": "npx --yes serve app",
+    "android": "npx cap sync android && npx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
   }
 }

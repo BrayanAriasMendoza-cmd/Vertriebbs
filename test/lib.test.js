@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { statsForDay, missingOrderFields, toCSV } from '../app/lib.js';
+import { statsForDay, missingOrderFields, toCSV, doorsOnStreet } from '../app/lib.js';
 
 const visits = [
   { time: '2026-10-06T09:00:00.000Z', street: 'Hauptstr.', number: '1', outcome: 'nicht_da' },
@@ -28,4 +28,17 @@ test('toCSV setzt Felder mit Semikolon in Anführungszeichen', () => {
   assert.ok(lines[0].startsWith('Zeit;Straße;Hausnr.'));
   assert.ok(lines[2].includes('"Müller; Anna"'));
   assert.ok(lines[2].endsWith(';ja'));
+});
+
+test('doorsOnStreet liefert das letzte Ergebnis je Hausnummer, numerisch sortiert', () => {
+  const v = [
+    { street: 'A-Weg', number: '10', outcome: 'nicht_da' },
+    { street: 'A-Weg', number: '2', outcome: 'spaeter' },
+    { street: 'B-Weg', number: '1', outcome: 'abschluss' },
+    { street: 'A-Weg', number: '10', outcome: 'abschluss' },
+  ];
+  assert.deepEqual(doorsOnStreet(v, 'A-Weg'), [
+    { number: '2', outcome: 'spaeter' },
+    { number: '10', outcome: 'abschluss' },
+  ]);
 });
