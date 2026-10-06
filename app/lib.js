@@ -7,8 +7,7 @@ export const OUTCOMES = {
   abschluss: 'Abschluss',
 };
 
-// Platzhalter, bis die echten Tarife feststehen.
-export const TARIFFS = ['Glasfaser 300', 'Glasfaser 600', 'Glasfaser 1000'];
+export const TARIFFS = ['Highspeed 150', 'Highspeed 300', 'Highspeed 600', 'Highspeed 1000'];
 
 export function dayKey(iso) {
   return iso.slice(0, 10);
@@ -70,4 +69,17 @@ export function doorsOnStreet(visits, street) {
   return [...latest]
     .map(([number, outcome]) => ({ number, outcome }))
     .sort((a, b) => a.number.localeCompare(b.number, 'de', { numeric: true }));
+}
+
+// Liest Straßennamen aus eingefügtem Text oder einer CSV-Datei: erste Spalte je Zeile,
+// eine Hausnummer am Ende wird abgeschnitten, Kopfzeile und Doppelte fallen weg.
+export function parseStreetList(text) {
+  const streets = [];
+  for (const line of text.split(/\r?\n/)) {
+    const cell = line.split(/[;\t,]/)[0].replace(/"/g, '').trim();
+    const street = cell.replace(/\s+\d+\s*[a-zA-Z]?$/, '').trim();
+    if (!street || /^stra(ß|ss)e$/i.test(street) || streets.includes(street)) continue;
+    streets.push(street);
+  }
+  return streets;
 }

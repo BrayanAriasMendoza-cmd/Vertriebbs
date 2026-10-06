@@ -1,4 +1,4 @@
-import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet } from './lib.js';
+import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet, parseStreetList } from './lib.js';
 
 const $ = (sel) => document.querySelector(sel);
 const STORE = 'visits';
@@ -69,6 +69,23 @@ function renderHome() {
     list.append(li);
   }
 }
+
+function importStreets(text) {
+  const streets = loadStreets();
+  const added = parseStreetList(text).filter((s) => !streets.includes(s));
+  saveStreets([...streets, ...added]);
+  $('#import-text').value = '';
+  $('#import').open = false;
+  alert(`${added.length} Straßen übernommen.`);
+  renderHome();
+}
+
+$('#btn-import').addEventListener('click', () => importStreets($('#import-text').value));
+$('#import-file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (file) importStreets(await file.text());
+  e.target.value = '';
+});
 
 // Straße, PLZ und Ort bleiben vom letzten Besuch stehen, nur die Hausnummer wird neu eingegeben.
 function openDoor(street) {

@@ -19,7 +19,7 @@ header { display: flex; align-items: center; gap: 8px; }
 h1 { font-size: 22px; margin: 4px 0; }
 h2 { font-size: 16px; color: var(--muted); margin: 12px 0 0; }
 .back { background: none; border: 0; font-size: 32px; padding: 0 8px; color: var(--blue); }
-input, button, canvas { font: inherit; border-radius: 10px; }
+input, button, canvas, textarea { font: inherit; border-radius: 10px; }
 input { width: 100%; padding: 14px; border: 1px solid #cfd5de; background: var(--card); }
 button { padding: 14px; border: 1px solid #cfd5de; background: var(--card); color: var(--text); }
 button.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
@@ -49,3 +49,9 @@ canvas { width: 100%; background: var(--card); border: 1px solid #cfd5de; touch-
 .list li.street button { border: 0; background: none; color: var(--muted); padding: 4px 8px; }
 .done { margin: 0; color: var(--muted); font-size: 15px; }
 form.row { flex-direction: row; }
+details { display: flex; flex-direction: column; gap: 8px; }
+details[open] { display: flex; }
+summary { color: var(--blue); padding: 6px 0; cursor: pointer; }
+textarea { width: 100%; padding: 12px; border: 1px solid #cfd5de; margin-bottom: 8px; }
+label.file { display: block; text-align: center; padding: 14px; border: 1px dashed #cfd5de; border-radius: 10px; color: var(--blue); font-size: 17px; margin: 0 0 8px; }
+#btn-import { width: 100%; }

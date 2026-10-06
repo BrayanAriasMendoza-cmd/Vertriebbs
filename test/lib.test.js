@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { statsForDay, missingOrderFields, toCSV, doorsOnStreet } from '../app/lib.js';
+import { statsForDay, missingOrderFields, toCSV, doorsOnStreet, parseStreetList } from '../app/lib.js';
 
 const visits = [
   { time: '2026-10-06T09:00:00.000Z', street: 'Hauptstr.', number: '1', outcome: 'nicht_da' },
   { time: '2026-10-06T09:05:00.000Z', street: 'Hauptstr.', number: '3', outcome: 'abschluss',
-    order: { available: 'ja', tariff: 'Glasfaser 600', name: 'Müller; Anna', phone: '0170', signature: 'data:x' } },
+    order: { available: 'ja', tariff: 'Highspeed 600', name: 'Müller; Anna', phone: '0170', signature: 'data:x' } },
   { time: '2026-10-05T17:00:00.000Z', street: 'Hauptstr.', number: '5', outcome: 'kein_interesse' },
 ];
 
@@ -41,4 +41,9 @@ test('doorsOnStreet liefert das letzte Ergebnis je Hausnummer, numerisch sortier
     { number: '2', outcome: 'spaeter' },
     { number: '10', outcome: 'abschluss' },
   ]);
+});
+
+test('parseStreetList liest Straßen aus Liste, CSV und Adressen', () => {
+  const text = 'Straße;Hausnr.\nHauptstraße;12\n"Lindenweg";3\nAm Markt 7a\nHauptstraße 14\n\n  Bahnhofstr.  ';
+  assert.deepEqual(parseStreetList(text), ['Hauptstraße', 'Lindenweg', 'Am Markt', 'Bahnhofstr.']);
 });
