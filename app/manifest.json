@@ -1,0 +1,9 @@
+{
+  "name": "Vertrieb Glasfaser",
+  "short_name": "Vertrieb",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0b5cad",
+  "lang": "de"
+}

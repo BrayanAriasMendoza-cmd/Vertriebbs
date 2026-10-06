@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b5cad">
+  <title>Vertrieb Glasfaser</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Startseite: Tagesübersicht -->
+  <section id="view-home" class="view">
+    <header><h1>Heute</h1></header>
+    <div id="stats" class="stats"></div>
+    <button id="btn-new" class="big primary">+ Nächste Tür</button>
+    <ul id="list" class="list"></ul>
+    <button id="btn-export" class="secondary">Als CSV exportieren</button>
+  </section>
+
+  <!-- Schritt 1: Adresse und Ergebnis an der Tür -->
+  <section id="view-door" class="view" hidden>
+    <header><button class="back" data-go="home">‹</button><h1>Tür</h1></header>
+    <form id="form-address" class="address" autocomplete="off">
+      <input name="street" placeholder="Straße" required>
+      <div class="row">
+        <input name="number" placeholder="Nr." required inputmode="text" class="short">
+        <button type="button" id="btn-plus" class="secondary short" title="Nächste Hausnummer">+2</button>
+      </div>
+      <div class="row">
+        <input name="zip" placeholder="PLZ" inputmode="numeric" class="short">
+        <input name="city" placeholder="Ort">
+      </div>
+      <input name="note" placeholder="Notiz (optional)">
+    </form>
+    <div class="outcomes">
+      <button data-outcome="nicht_da">Nicht da</button>
+      <button data-outcome="kein_interesse">Kein Interesse</button>
+      <button data-outcome="spaeter">Später</button>
+      <button data-outcome="abschluss" class="primary">Abschluss</button>
+    </div>
+  </section>
+
+  <!-- Schritt 2: Auftrag aufnehmen -->
+  <section id="view-order" class="view" hidden>
+    <header><button class="back" data-go="door">‹</button><h1>Auftrag</h1></header>
+    <form id="form-order" autocomplete="off">
+      <p class="addr" id="order-addr"></p>
+      <label>Glasfaser verfügbar?</label>
+      <div class="choice" data-field="available">
+        <button type="button" data-value="ja">Ja</button>
+        <button type="button" data-value="nein">Nein</button>
+        <button type="button" data-value="unklar">Unklar</button>
+      </div>
+      <label>Tarif</label>
+      <div class="choice" data-field="tariff" id="tariffs"></div>
+      <input name="name" placeholder="Vor- und Nachname">
+      <input name="phone" placeholder="Telefon" type="tel">
+      <input name="email" placeholder="E-Mail" type="email">
+      <label>Unterschrift</label>
+      <canvas id="signature" height="160"></canvas>
+      <button type="button" id="btn-clear-sig" class="secondary">Unterschrift löschen</button>
+      <p id="order-error" class="error"></p>
+      <button type="submit" class="big primary">Auftrag speichern</button>
+    </form>
+  </section>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
