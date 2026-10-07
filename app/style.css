@@ -55,3 +55,19 @@ summary { color: var(--blue); padding: 6px 0; cursor: pointer; }
 textarea { width: 100%; padding: 12px; border: 1px solid #cfd5de; margin-bottom: 8px; }
 label.file { display: block; text-align: center; padding: 14px; border: 1px dashed #cfd5de; border-radius: 10px; color: var(--blue); font-size: 17px; margin: 0 0 8px; }
 #btn-import { width: 100%; }
+.maps { color: var(--blue); font-size: 15px; }
+.more summary { font-size: 15px; }
+label.check { display: flex; align-items: center; gap: 8px; font-size: 15px; margin: 0; }
+label.check input { width: auto; }
+.list li.door { cursor: pointer; align-items: center; }
+.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+.s-offen { background: #8b9490; }
+.s-nicht_angetroffen { background: #24408e; }
+.s-interesse { background: #4ab3e6; }
+.s-vertrag { background: #27a65b; }
+.s-abgelehnt { background: #e5483a; }
+.s-we_unstimmig { background: #f28c28; }
+.s-unbewohnt { background: #f5c518; }
+.s-gewerbe { background: #8b5a2b; }
+.s-unbemerkbar { background: #8e1b2e; }
+.s-blacklist { background: #0a0a0a; }

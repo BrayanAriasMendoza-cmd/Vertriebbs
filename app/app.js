@@ -1,10 +1,11 @@
-import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet, parseStreetList } from './lib.js';
+import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet, migrateVisits, parseCSV, parseAddressList, mapsUrl } from './lib.js';
+import { xlsxRows } from './xlsx.js';
 
 const $ = (sel) => document.querySelector(sel);
 const STORE = 'visits';
 
 function loadVisits() {
-  return JSON.parse(localStorage.getItem(STORE) || '[]');
+  return migrateVisits(JSON.parse(localStorage.getItem(STORE) || '[]'));
 }
 
 function saveVisit(visit) {
@@ -21,9 +22,19 @@ function saveStreets(streets) {
   localStorage.setItem('streets', JSON.stringify(streets));
 }
 
+// Adressen aus der eingelesenen Liste: { street, number, zip, city, info }
+function loadAddresses() {
+  return JSON.parse(localStorage.getItem('addresses') || '[]');
+}
+
+function saveAddresses(addresses) {
+  localStorage.setItem('addresses', JSON.stringify(addresses));
+}
+
 function show(name) {
   for (const v of document.querySelectorAll('.view')) v.hidden = v.id !== `view-${name}`;
   if (name === 'home') renderHome();
+  if (name === 'street') renderStreet();
   window.scrollTo(0, 0);
 }
 
@@ -35,25 +46,31 @@ function renderHome() {
   const s = statsForDay(visits, today);
   $('#stats').innerHTML = [
     [s.total, 'Türen'],
-    [s.abschluss, 'Abschlüsse'],
-    [s.spaeter, 'Später'],
-    [s.nicht_da, 'Nicht da'],
+    [s.vertrag, 'Verträge'],
+    [s.interesse, 'Interessiert'],
+    [s.nicht_angetroffen, 'Nicht da'],
   ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
 
+  const addresses = loadAddresses();
   const streets = $('#streets');
   streets.replaceChildren();
   for (const name of loadStreets()) {
+    const doors = doorsOnStreet(visits, name, addresses);
     const li = document.createElement('li');
     li.className = 'street';
     li.innerHTML = '<span></span><span><small></small><button title="Entfernen">✕</button></span>';
     li.querySelector('span').textContent = name;
-    li.querySelector('small').textContent = `${doorsOnStreet(visits, name).length} Türen`;
+    const visited = doors.filter((d) => d.outcome).length;
+    li.querySelector('small').textContent = addresses.some((a) => a.street === name) ? `${visited}/${doors.length}` : `${visited} Türen`;
     li.addEventListener('click', (e) => {
       if (e.target.tagName === 'BUTTON') {
-        if (confirm(`${name} aus dem Gebiet entfernen?`)) saveStreets(loadStreets().filter((s) => s !== name));
+        if (confirm(`${name} aus dem Gebiet entfernen?`)) {
+          saveStreets(loadStreets().filter((s) => s !== name));
+          saveAddresses(loadAddresses().filter((a) => a.street !== name));
+        }
         return renderHome();
       }
-      openDoor(name);
+      openStreet(name);
     });
     streets.append(li);
   }
@@ -70,32 +87,81 @@ function renderHome() {
   }
 }
 
-function importStreets(text) {
+// Übernimmt Straßen und Adressen aus einer Liste; schon vorhandene bleiben unverändert.
+function importList(rows) {
+  const list = parseAddressList(rows);
   const streets = loadStreets();
-  const added = parseStreetList(text).filter((s) => !streets.includes(s));
-  saveStreets([...streets, ...added]);
+  const addresses = loadAddresses();
+  const newStreets = list.streets.filter((s) => !streets.includes(s));
+  const newAddresses = list.addresses.filter((a) => !addresses.some((b) => b.street === a.street && b.number === a.number));
+  saveStreets([...streets, ...newStreets]);
+  saveAddresses([...addresses, ...newAddresses]);
   $('#import-text').value = '';
   $('#import').open = false;
-  alert(`${added.length} Straßen übernommen.`);
+  alert(`${newStreets.length} Straßen und ${newAddresses.length} Adressen übernommen.`);
   renderHome();
 }
 
-$('#btn-import').addEventListener('click', () => importStreets($('#import-text').value));
+$('#btn-import').addEventListener('click', () => importList(parseCSV($('#import-text').value)));
 $('#import-file').addEventListener('change', async (e) => {
   const file = e.target.files[0];
-  if (file) importStreets(await file.text());
   e.target.value = '';
+  if (!file) return;
+  try {
+    importList(/\.xlsx$/i.test(file.name) ? await xlsxRows(await file.arrayBuffer()) : parseCSV(await file.text()));
+  } catch (err) {
+    alert(err.message || 'Die Liste konnte nicht gelesen werden.');
+  }
 });
 
+// ---------- Straße ----------
+
+let currentStreet = '';
+let returnTo = 'home';
+
+function openStreet(name) {
+  currentStreet = name;
+  show('street');
+}
+
+function renderStreet() {
+  $('#street-name').textContent = currentStreet;
+  const list = $('#doors');
+  list.replaceChildren();
+  const onlyOpen = $('#only-open').checked;
+  for (const door of doorsOnStreet(loadVisits(), currentStreet, loadAddresses())) {
+    if (onlyOpen && door.outcome) continue;
+    const li = document.createElement('li');
+    li.className = 'door';
+    li.innerHTML = '<span><i class="dot"></i><b></b> <small></small></span><small></small>';
+    li.querySelector('.dot').classList.add(`s-${door.outcome || 'offen'}`);
+    li.querySelector('b').textContent = door.number;
+    li.querySelector('span small').textContent = door.info;
+    li.lastChild.textContent = door.outcome ? OUTCOMES[door.outcome] : 'offen';
+    li.addEventListener('click', () => openDoor(currentStreet, door.number));
+    list.append(li);
+  }
+}
+
+$('#only-open').addEventListener('change', renderStreet);
+$('#btn-other').addEventListener('click', () => openDoor(currentStreet, ''));
+
 // Straße, PLZ und Ort bleiben vom letzten Besuch stehen, nur die Hausnummer wird neu eingegeben.
-function openDoor(street) {
+// Aus der Straßenansicht kommen Straße und Hausnummer mit, PLZ und Ort aus der Adressliste.
+function openDoor(street, number) {
   const f = $('#form-address');
+  returnTo = street ? 'street' : 'home';
+  $('#view-door .back').dataset.go = returnTo;
   if (street) f.street.value = street;
-  f.number.value = '';
+  f.number.value = number || '';
   f.note.value = '';
+  const known = loadAddresses().find((a) => a.street === street && a.number === number);
+  if (known?.zip) f.zip.value = known.zip;
+  if (known?.city) f.city.value = known.city;
+  $('#info').textContent = known?.info || '';
   renderDone();
   show('door');
-  (f.street.value ? f.number : f.street).focus();
+  if (!f.number.value) (f.street.value ? f.number : f.street).focus();
 }
 
 $('#btn-new').addEventListener('click', () => openDoor());
@@ -126,17 +192,21 @@ $('#btn-plus').addEventListener('click', () => {
   const input = $('#form-address').number;
   const n = parseInt(input.value, 10);
   input.value = Number.isNaN(n) ? '' : String(n + 2);
+  renderDone();
 });
 
-// Zeigt, welche Hausnummern der Straße schon besucht wurden.
+// Zeigt, welche Hausnummern der Straße schon besucht wurden, und aktualisiert den Kartenlink.
 function renderDone() {
-  const doors = doorsOnStreet(loadVisits(), $('#form-address').street.value.trim());
+  const f = $('#form-address');
+  const doors = doorsOnStreet(loadVisits(), f.street.value.trim());
   $('#done').textContent = doors.length
     ? `Schon besucht: ${doors.map((d) => `${d.number} (${OUTCOMES[d.outcome]})`).join(', ')}`
     : '';
+  const address = `${f.street.value} ${f.number.value}, ${f.zip.value} ${f.city.value}`.replace(/[\s,]+$/, '').trim();
+  $('#maps').href = mapsUrl(address, /iPhone|iPad|Macintosh/.test(navigator.userAgent));
 }
 
-$('#form-address').street.addEventListener('change', renderDone);
+$('#form-address').addEventListener('input', renderDone);
 
 function currentAddress() {
   const f = $('#form-address');
@@ -154,9 +224,10 @@ for (const b of document.querySelectorAll('[data-outcome]')) {
   b.addEventListener('click', () => {
     const address = currentAddress();
     if (!address) return;
-    if (b.dataset.outcome === 'abschluss') return openOrder(address);
+    if (b.dataset.outcome === 'vertrag') return openOrder(address);
     saveVisit({ time: new Date().toISOString(), outcome: b.dataset.outcome, ...address });
-    show('home');
+    b.closest('details')?.removeAttribute('open');
+    show(returnTo);
   });
 }
 
@@ -204,8 +275,8 @@ $('#form-order').addEventListener('submit', (e) => {
     $('#order-error').textContent = `Fehlt noch: ${missing.join(', ')}`;
     return;
   }
-  saveVisit({ time: new Date().toISOString(), outcome: 'abschluss', ...pendingAddress, order: data });
-  show('home');
+  saveVisit({ time: new Date().toISOString(), outcome: 'vertrag', ...pendingAddress, order: data });
+  show(returnTo);
 });
 
 // ---------- Unterschrift ----------

@@ -25,14 +25,22 @@
       <button type="submit" class="secondary short">+</button>
     </form>
     <details id="import">
-      <summary>Straßenliste einlesen</summary>
+      <summary>Adressliste einlesen</summary>
       <textarea id="import-text" rows="5" placeholder="Straßen oder Adressen einfügen, eine pro Zeile (z. B. aus Excel kopiert)"></textarea>
-      <label class="file secondary">Oder Datei wählen (CSV, TXT)<input type="file" id="import-file" accept=".csv,.txt,text/plain,text/csv" hidden></label>
+      <label class="file secondary">Oder Datei wählen (Excel, CSV)<input type="file" id="import-file" accept=".xlsx,.csv,.txt,text/plain,text/csv" hidden></label>
       <button type="button" id="btn-import" class="secondary">Übernehmen</button>
     </details>
     <h2>Heute besucht</h2>
     <ul id="list" class="list"></ul>
     <button id="btn-export" class="secondary">Als CSV exportieren</button>
+  </section>
+
+  <!-- Straße: alle Häuser mit Status -->
+  <section id="view-street" class="view" hidden>
+    <header><button class="back" data-go="home">‹</button><h1 id="street-name"></h1></header>
+    <label class="check"><input type="checkbox" id="only-open"> Nur offene zeigen</label>
+    <ul id="doors" class="list"></ul>
+    <button id="btn-other" class="secondary">+ Andere Hausnummer</button>
   </section>
 
   <!-- Schritt 1: Adresse und Ergebnis an der Tür -->
@@ -50,18 +58,30 @@
       </div>
       <input name="note" placeholder="Notiz (optional)">
     </form>
+    <p id="info" class="done"></p>
+    <a id="maps" class="maps" target="_blank" rel="noopener">Route in Karten öffnen</a>
     <p id="done" class="done"></p>
     <div class="outcomes">
-      <button data-outcome="nicht_da">Nicht da</button>
-      <button data-outcome="kein_interesse">Kein Interesse</button>
-      <button data-outcome="spaeter">Später</button>
-      <button data-outcome="abschluss" class="primary">Abschluss</button>
+      <button data-outcome="nicht_angetroffen">Nicht angetroffen</button>
+      <button data-outcome="interesse">Interessiert</button>
+      <button data-outcome="abgelehnt">Kein Interesse</button>
+      <button data-outcome="vertrag" class="primary">Vertrag</button>
     </div>
+    <details class="more">
+      <summary>Weitere Status</summary>
+      <div class="outcomes">
+        <button data-outcome="we_unstimmig">WE unstimmig</button>
+        <button data-outcome="unbewohnt">Unbewohnt</button>
+        <button data-outcome="gewerbe">Gewerbe</button>
+        <button data-outcome="unbemerkbar">Unbemerkbar</button>
+        <button data-outcome="blacklist">Blacklist</button>
+      </div>
+    </details>
   </section>
 
   <!-- Schritt 2: Auftrag aufnehmen -->
   <section id="view-order" class="view" hidden>
-    <header><button class="back" data-go="door">‹</button><h1>Auftrag</h1></header>
+    <header><button class="back" data-go="door">‹</button><h1>Vertrag</h1></header>
     <form id="form-order" autocomplete="off">
       <p class="addr" id="order-addr"></p>
       <label>Glasfaser verfügbar?</label>
@@ -79,7 +99,7 @@
       <canvas id="signature" height="160"></canvas>
       <button type="button" id="btn-clear-sig" class="secondary">Unterschrift löschen</button>
       <p id="order-error" class="error"></p>
-      <button type="submit" class="big primary">Auftrag speichern</button>
+      <button type="submit" class="big primary">Vertrag speichern</button>
     </form>
   </section>
 
