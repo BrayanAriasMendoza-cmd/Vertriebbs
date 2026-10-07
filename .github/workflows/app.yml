@@ -1,0 +1,63 @@
+name: App bauen
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm test
+      - run: npx cap sync android
+      - run: ./gradlew assembleDebug
+        working-directory: android
+      - run: mv android/app/build/outputs/apk/debug/app-debug.apk vertrieb-glasfaser.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vertrieb-glasfaser-apk
+          path: vertrieb-glasfaser.apk
+      # Auf main wird die APK als Release veröffentlicht, damit sie sich direkt aufs Handy laden lässt.
+      - if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: neueste-version
+          name: Neueste Version
+          prerelease: true
+          files: vertrieb-glasfaser.apk
+
+  # Auf main wird die Web-App auf GitHub Pages veröffentlicht, z. B. fürs iPhone („Zum Home-Bildschirm“).
+  web:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+      - id: deploy
+        uses: actions/deploy-pages@v4
