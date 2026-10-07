@@ -55,3 +55,30 @@ summary { color: var(--blue); padding: 6px 0; cursor: pointer; }
 textarea { width: 100%; padding: 12px; border: 1px solid #cfd5de; margin-bottom: 8px; }
 label.file { display: block; text-align: center; padding: 14px; border: 1px dashed #cfd5de; border-radius: 10px; color: var(--blue); font-size: 17px; margin: 0 0 8px; }
 #btn-import { width: 100%; }
+.maps { color: var(--blue); font-size: 15px; }
+.more summary { font-size: 15px; }
+label.check { display: flex; align-items: center; gap: 8px; font-size: 15px; margin: 0; }
+label.check input { width: auto; }
+.list li.door { cursor: pointer; align-items: center; }
+.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+.s-offen { background: #8b9490; }
+.s-nicht_angetroffen { background: #24408e; }
+.s-interesse { background: #4ab3e6; }
+.s-vertrag { background: #27a65b; }
+.s-abgelehnt { background: #e5483a; }
+.s-we_unstimmig { background: #f28c28; }
+.s-unbewohnt { background: #f5c518; }
+.s-gewerbe { background: #8b5a2b; }
+.s-unbemerkbar { background: #8e1b2e; }
+.s-blacklist { background: #0a0a0a; }
+.extras { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.extras button.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+.extras span { color: var(--muted); font-size: 14px; flex: 0 0 auto; }
+.extras button { padding: 8px; font-size: 15px; }
+.map { width: 100%; aspect-ratio: 1; background: var(--card); border-radius: 10px; border: 1px solid #cfd5de; }
+.map circle { stroke: #fff; stroke-width: 0; }
+.map .me { fill: #0b5cad; stroke: #fff; stroke-width: 3; }
+.map text { font-size: 11px; fill: var(--text); pointer-events: none; }
+.s-offen { fill: #8b9490; } .s-nicht_angetroffen { fill: #24408e; } .s-interesse { fill: #4ab3e6; } .s-vertrag { fill: #27a65b; }
+.s-abgelehnt { fill: #e5483a; } .s-we_unstimmig { fill: #f28c28; } .s-unbewohnt { fill: #f5c518; } .s-gewerbe { fill: #8b5a2b; }
+.s-unbemerkbar { fill: #8e1b2e; } .s-blacklist { fill: #0a0a0a; }
