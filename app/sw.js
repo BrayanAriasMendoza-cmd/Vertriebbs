@@ -1,5 +1,5 @@
 // Speichert die App-Dateien, damit sie ohne Netz startet.
-const CACHE = 'vertrieb-v5';
+const CACHE = 'vertrieb-v6';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'lib.js', 'xlsx.js', 'manifest.json', 'icon.svg', 'apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {

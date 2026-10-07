@@ -1,4 +1,4 @@
-import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet, migrateVisits, parseCSV, parseAddressList, mapsUrl } from './lib.js';
+import { OUTCOMES, TARIFFS, statsForDay, missingOrderFields, toCSV, dayKey, doorsOnStreet, migrateVisits, parseCSV, parseAddressList, mapsUrl, pointsForDay, mapPoints } from './lib.js';
 import { xlsxRows } from './xlsx.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -35,6 +35,7 @@ function show(name) {
   for (const v of document.querySelectorAll('.view')) v.hidden = v.id !== `view-${name}`;
   if (name === 'home') renderHome();
   if (name === 'street') renderStreet();
+  if (name === 'map') renderMap();
   window.scrollTo(0, 0);
 }
 
@@ -48,7 +49,7 @@ function renderHome() {
     [s.total, 'Türen'],
     [s.vertrag, 'Verträge'],
     [s.interesse, 'Interessiert'],
-    [s.nicht_angetroffen, 'Nicht da'],
+    [pointsForDay(visits, today), 'Punkte'],
   ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
 
   const addresses = loadAddresses();
@@ -135,10 +136,10 @@ function renderStreet() {
     li.className = 'door';
     li.innerHTML = '<span><i class="dot"></i><b></b> <small></small></span><small></small>';
     li.querySelector('.dot').classList.add(`s-${door.outcome || 'offen'}`);
-    li.querySelector('b').textContent = door.number;
+    li.querySelector('b').textContent = door.unit ? `${door.number} · ${door.unit}` : door.number;
     li.querySelector('span small').textContent = door.info;
     li.lastChild.textContent = door.outcome ? OUTCOMES[door.outcome] : 'offen';
-    li.addEventListener('click', () => openDoor(currentStreet, door.number));
+    li.addEventListener('click', () => openDoor(currentStreet, door.number, door.unit));
     list.append(li);
   }
 }
@@ -148,13 +149,15 @@ $('#btn-other').addEventListener('click', () => openDoor(currentStreet, ''));
 
 // Straße, PLZ und Ort bleiben vom letzten Besuch stehen, nur die Hausnummer wird neu eingegeben.
 // Aus der Straßenansicht kommen Straße und Hausnummer mit, PLZ und Ort aus der Adressliste.
-function openDoor(street, number) {
+function openDoor(street, number, unit) {
   const f = $('#form-address');
   returnTo = street ? 'street' : 'home';
   $('#view-door .back').dataset.go = returnTo;
   if (street) f.street.value = street;
   f.number.value = number || '';
+  f.unit.value = unit || '';
   f.note.value = '';
+  for (const b of $('#extras').querySelectorAll('button')) b.classList.remove('on');
   const known = loadAddresses().find((a) => a.street === street && a.number === number);
   if (known?.zip) f.zip.value = known.zip;
   if (known?.city) f.city.value = known.city;
@@ -200,7 +203,7 @@ function renderDone() {
   const f = $('#form-address');
   const doors = doorsOnStreet(loadVisits(), f.street.value.trim());
   $('#done').textContent = doors.length
-    ? `Schon besucht: ${doors.map((d) => `${d.number} (${OUTCOMES[d.outcome]})`).join(', ')}`
+    ? `Schon besucht: ${doors.filter((d) => d.outcome).map((d) => `${d.number}${d.unit ? ` ${d.unit}` : ''} (${OUTCOMES[d.outcome]})`).join(', ')}`
     : '';
   const address = `${f.street.value} ${f.number.value}, ${f.zip.value} ${f.city.value}`.replace(/[\s,]+$/, '').trim();
   $('#maps').href = mapsUrl(address, /iPhone|iPad|Macintosh/.test(navigator.userAgent));
@@ -216,9 +219,13 @@ function currentAddress() {
     number: f.number.value.trim(),
     zip: f.zip.value.trim(),
     city: f.city.value.trim(),
+    unit: f.unit.value.trim(),
     note: f.note.value.trim(),
+    extras: [...$('#extras').querySelectorAll('button.on')].map((b) => b.dataset.value),
   };
 }
+
+$('#extras').addEventListener('click', (e) => e.target.closest('button')?.classList.toggle('on'));
 
 for (const b of document.querySelectorAll('[data-outcome]')) {
   b.addEventListener('click', () => {
@@ -229,6 +236,65 @@ for (const b of document.querySelectorAll('[data-outcome]')) {
     b.closest('details')?.removeAttribute('open');
     show(returnTo);
   });
+}
+
+// ---------- Karte ----------
+
+let myPosition = null;
+let mapAroundMe = false;
+
+$('#btn-map').addEventListener('click', () => show('map'));
+$('#btn-all').addEventListener('click', () => { mapAroundMe = false; renderMap(); });
+$('#btn-locate').addEventListener('click', () => {
+  if (!navigator.geolocation) return ($('#map-msg').textContent = 'Dieses Handy kann den Standort nicht bestimmen.');
+  $('#map-msg').textContent = 'Standort wird gesucht …';
+  navigator.geolocation.getCurrentPosition(
+    (p) => { myPosition = { lat: p.coords.latitude, lon: p.coords.longitude }; mapAroundMe = true; renderMap(); },
+    () => { $('#map-msg').textContent = 'Standort nicht verfügbar. Bitte Ortung für die App erlauben.'; },
+    { enableHighAccuracy: true, timeout: 15000 },
+  );
+});
+
+// Zeichnet die Häuser als farbige Punkte (Meter-Raster um die Mitte). Tippen öffnet die Tür.
+function renderMap() {
+  const svg = $('#map');
+  svg.replaceChildren();
+  const points = mapPoints(loadVisits(), loadAddresses());
+  $('#map-msg').textContent = points.length ? '' : 'Keine Häuser mit Koordinaten. Die Vermarktungsliste mit Koordinaten-Spalten einlesen.';
+  if (!points.length && !myPosition) return;
+  const center = mapAroundMe && myPosition ? myPosition : points.reduce((c, p) => ({ lat: c.lat + p.lat / points.length, lon: c.lon + p.lon / points.length }), { lat: 0, lon: 0 });
+  const k = Math.cos(center.lat * Math.PI / 180);
+  const xy = (p) => [(p.lon - center.lon) * 111320 * k, (center.lat - p.lat) * 111320];
+  let half = 150;
+  if (!mapAroundMe) for (const p of points) half = Math.max(half, ...xy(p).map(Math.abs));
+  half *= 1.05;
+  svg.setAttribute('viewBox', `${-half} ${-half} ${2 * half} ${2 * half}`);
+  const r = half / 22;
+  const ns = 'http://www.w3.org/2000/svg';
+  for (const p of points) {
+    const [x, y] = xy(p);
+    if (Math.abs(x) > half || Math.abs(y) > half) continue;
+    const c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', r);
+    c.setAttribute('class', `s-${p.outcome || 'offen'}`);
+    c.addEventListener('click', () => { currentStreet = p.street; openDoor(p.street, p.number); });
+    svg.append(c);
+    if (mapAroundMe) {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', x + r * 1.3); t.setAttribute('y', y + r / 2);
+      t.style.fontSize = `${r * 1.6}px`;
+      t.textContent = p.number;
+      svg.append(t);
+    }
+  }
+  if (myPosition) {
+    const [x, y] = xy(myPosition);
+    const me = document.createElementNS(ns, 'circle');
+    me.setAttribute('cx', x); me.setAttribute('cy', y); me.setAttribute('r', r * 1.3);
+    me.setAttribute('class', 'me');
+    me.style.strokeWidth = r / 3;
+    svg.append(me);
+  }
 }
 
 // ---------- Auftrag ----------

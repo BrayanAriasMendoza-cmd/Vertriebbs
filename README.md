@@ -4,9 +4,9 @@ Schnelle App für den Door-to-Door-Vertrieb von Glasfaser. Es gibt sie als Andro
 
 ## Ablauf an der Tür
 
-1. Unter **Mein Gebiet** die Straßen eintragen oder mit **Adressliste einlesen** eine Liste laden: die Vermarktungsliste als Excel-Datei (.xlsx) oder CSV, oder Zeilen aus Excel einfügen. Mit Spalten „Strasse“ und „Hausnummer“ werden alle Häuser samt PLZ, Ort, EFH/MFH, Wohneinheiten und Anzahl SV übernommen. Die Liste bleibt nur auf dem Handy. Ein Tap auf eine Straße zeigt alle Häuser mit farbigem Status (wahlweise nur die offenen).
+1. Unter **Mein Gebiet** die Straßen eintragen oder mit **Adressliste einlesen** eine Liste laden: die Vermarktungsliste als Excel-Datei (.xlsx) oder CSV, oder Zeilen aus Excel einfügen. Mit Spalten „Strasse“ und „Hausnummer“ werden alle Häuser samt PLZ, Ort, EFH/MFH, Wohneinheiten und Anzahl SV übernommen. Die Liste bleibt nur auf dem Handy. Ein Tap auf eine Straße zeigt alle Häuser mit farbigem Status (wahlweise nur die offenen). Hat die Liste Koordinaten (Gauß-Krüger oder Lat/Lon), zeigt **Karte** alle Häuser als farbige Punkte, mit **Um mich herum** per GPS die nähere Umgebung.
 2. Oder **Nächste Tür** tippen. Straße, PLZ und Ort bleiben vom letzten Besuch stehen, nur die Hausnummer wird eingetippt (oder mit **+2** zur nächsten Nummer auf derselben Straßenseite gesprungen).
-3. Haus antippen, Ergebnis mit einem Tap: **Nicht angetroffen**, **Interessiert**, **Kein Interesse** oder **Vertrag**; unter „Weitere Status“ WE unstimmig, Unbewohnt, Gewerbe, Unbemerkbar, Blacklist (die Status der Vertriebsrunde-App). Danach geht es zurück zur Straße.
+3. Haus antippen, Ergebnis mit einem Tap: **Nicht angetroffen**, **Interessiert**, **Kein Interesse** oder **Vertrag**; unter „Weitere Status“ WE unstimmig, Unbewohnt, Gewerbe, Unbemerkbar, Blacklist (die Status der Vertriebsrunde-App). Danach geht es zurück zur Straße. Bei Mehrfamilienhäusern die Wohnung oder den Namen eintragen; jede Wohnung bekommt ihren eigenen Status. Interesse an Strom, Gas oder Solar mit einem Tap dazu markieren.
 4. Bei **Vertrag**: Glasfaser verfügbar, Tarif, Name, Telefon oder E-Mail, Unterschrift auf dem Bildschirm.
 5. Die Startseite zeigt die Zahlen des Tages. **Als CSV exportieren** lädt alle Besuche als Tabelle für Excel herunter.
 

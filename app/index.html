@@ -19,6 +19,7 @@
     <div id="stats" class="stats"></div>
     <button id="btn-new" class="big primary">+ Nächste Tür</button>
     <h2>Mein Gebiet</h2>
+    <button id="btn-map" class="secondary">Karte</button>
     <ul id="streets" class="list"></ul>
     <form id="form-street" class="row" autocomplete="off">
       <input name="street" placeholder="Straße hinzufügen" required>
@@ -43,6 +44,17 @@
     <button id="btn-other" class="secondary">+ Andere Hausnummer</button>
   </section>
 
+  <!-- Karte: Häuser aus der Adressliste mit Status und eigener Position -->
+  <section id="view-map" class="view" hidden>
+    <header><button class="back" data-go="home">‹</button><h1>Karte</h1></header>
+    <div class="row">
+      <button id="btn-locate" class="secondary">Um mich herum</button>
+      <button id="btn-all" class="secondary">Ganzes Gebiet</button>
+    </div>
+    <p id="map-msg" class="done"></p>
+    <svg id="map" class="map"></svg>
+  </section>
+
   <!-- Schritt 1: Adresse und Ergebnis an der Tür -->
   <section id="view-door" class="view" hidden>
     <header><button class="back" data-go="home">‹</button><h1>Tür</h1></header>
@@ -56,11 +68,18 @@
         <input name="zip" placeholder="PLZ" inputmode="numeric" class="short">
         <input name="city" placeholder="Ort">
       </div>
+      <input name="unit" placeholder="Wohnung oder Name (bei Mehrfamilienhaus)">
       <input name="note" placeholder="Notiz (optional)">
     </form>
     <p id="info" class="done"></p>
     <a id="maps" class="maps" target="_blank" rel="noopener">Route in Karten öffnen</a>
     <p id="done" class="done"></p>
+    <div class="extras" id="extras">
+      <span>Auch Interesse an:</span>
+      <button type="button" data-value="Strom">Strom</button>
+      <button type="button" data-value="Gas">Gas</button>
+      <button type="button" data-value="Solar">Solar</button>
+    </div>
     <div class="outcomes">
       <button data-outcome="nicht_angetroffen">Nicht angetroffen</button>
       <button data-outcome="interesse">Interessiert</button>
